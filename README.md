@@ -40,12 +40,12 @@ python manage.py runserver 0.0.0.0:8000
 
 # Run Celery Purge
 ```
-celery -A similarity purge -l info --pool=solo
+celery -A similarity purge
 ```
 
 # Run Celery Worker
 ```
-celery -A similarity.worker -l info --pool=solo
+celery -A similarity worker -l info --pool=solo
 ```
 
 # sqlite3 JSON_VALID for windows
