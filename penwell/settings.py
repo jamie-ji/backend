@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     "corsheaders",
 
+    'django_cleanup.apps.CleanupConfig', # For deleting files when model is deleted, can remove if you want
+
     "base",
 ]
 
@@ -164,7 +166,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Australia/ACT"
 
 USE_I18N = True
 
