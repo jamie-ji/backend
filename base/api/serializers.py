@@ -38,5 +38,10 @@ class DocumentSerializer(ModelSerializer):
 
         return data
             
-            
 
+class RegisterSerializer(serializers.ModelSerializer): 
+
+    username = serializers.CharField(max_length=100, min_length=6)
+    emailAddress = serializers.EmailField(max_length=100, min_length=6)
+    pass
+    # TODO
