@@ -41,7 +41,7 @@ class DocumentSerializer(ModelSerializer):
 
         return data
             
-# Registration functionality.
+# Registration functionality using get_user_model.
 class RegisterSerializer(serializers.ModelSerializer): 
 
     username = serializers.CharField(max_length=100, min_length=6)
