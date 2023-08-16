@@ -4,6 +4,9 @@ from base.models import Document
 
 from docx import Document as DocxDocument
 from django.utils.timezone import make_aware
+from django.contrib.auth import get_user_model
+
+UserModel = get_user_model()
 
 class DocumentSerializer(ModelSerializer): 
     class Meta:
@@ -42,6 +45,22 @@ class DocumentSerializer(ModelSerializer):
 class RegisterSerializer(serializers.ModelSerializer): 
 
     username = serializers.CharField(max_length=100, min_length=6)
-    emailAddress = serializers.EmailField(max_length=100, min_length=6)
-    pass
-    # TODO
+    email = serializers.EmailField(max_length=100, min_length=6)
+    first_name = serializers.CharField(max_length=20, min_length=2)
+    last_name = serializers.CharField(max_length=20, min_length=2)
+    password = serializers.CharField(write_only=True)
+    def create(self,data):
+
+        user = UserModel.objects.create_user(
+            username=data['username'],
+            email=data['email'],
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            password=data['password']
+        )
+        return user
+    
+    class Meta:
+        model = UserModel
+        fields = ('username','email','first_name','last_name','password')
+    
