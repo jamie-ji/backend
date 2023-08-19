@@ -44,6 +44,7 @@ def getRoutes(request):
         "/api/token/refresh/",
         "/api/documents/",
         "/api/upload/",
+        "/api/register/",
     ]
 
     return Response(routes)
