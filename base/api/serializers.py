@@ -38,7 +38,6 @@ class DocumentSerializer(ModelSerializer):
         else: 
             print("File is None")
             raise serializers.ValidationError("File must not be None", code=status.HTTP_400_BAD_REQUEST)
-
         return data
             
 # Registration functionality using get_user_model.
