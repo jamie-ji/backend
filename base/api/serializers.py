@@ -1,17 +1,20 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers, status
-from base.models import Document
+from base.models import Document, DocumentErrorDetail, DocumentErrorStat
 
 from docx import Document as DocxDocument
 from django.utils.timezone import make_aware
 from django.contrib.auth import get_user_model
 
+import re
+
 UserModel = get_user_model()
 
-class DocumentSerializer(ModelSerializer): 
+class DocumentUploadSerializer(ModelSerializer):
+    # model for uploading a document, only one file field
     class Meta:
         model = Document
-        fields = '__all__'
+        fields = ['file']
 
     def preprocess(self, data):
         print("Preprocessing data")
@@ -34,15 +37,26 @@ class DocumentSerializer(ModelSerializer):
             data['author'] = doc.core_properties.author
             data['created_at'] = doc.core_properties.created
             data['last_modified'] = doc.core_properties.modified
-            # data['word_count'] = str(doc.core_properties.words)
+            data['word_count'] = len(re.findall(r'\w+', data['body']))
         else: 
             print("File is None")
             raise serializers.ValidationError("File must not be None", code=status.HTTP_400_BAD_REQUEST)
         return data
+    
+class DocumentSerializer(ModelSerializer): 
+    # model for viewing a document, all fields included
+    class Meta:
+        model = Document
+        fields = '__all__'
+
             
 # Registration functionality using get_user_model.
 class RegisterSerializer(serializers.ModelSerializer): 
-
+    # model for registering a user
+    class Meta:
+        model = UserModel
+        fields = ('username','email','first_name','last_name','password')
+    
     username = serializers.CharField(max_length=100, min_length=6)
     email = serializers.EmailField(max_length=100, min_length=6)
     first_name = serializers.CharField(max_length=20, min_length=2)
@@ -59,7 +73,15 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         return user
     
+class DocumentErrorDetailSerializer(ModelSerializer):
+    # model for viewing/updating a document error detail, all fields included
     class Meta:
-        model = UserModel
-        fields = ('username','email','first_name','last_name','password')
+        model = DocumentErrorDetail
+        fields = '__all__'
+
+class DocumentErrorStatSerializer(ModelSerializer):
+    # model for viewing/updating a document error stat, all fields included
+    class Meta:
+        model = DocumentErrorStat
+        fields = '__all__'
     

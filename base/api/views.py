@@ -8,9 +8,9 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from base.models import Document
-from .serializers import DocumentSerializer
-from .serializers import RegisterSerializer
+from base.models import Document, DocumentErrorDetail, DocumentErrorStat
+from .serializers import DocumentSerializer, DocumentUploadSerializer, RegisterSerializer
+from .serializers import DocumentErrorDetailSerializer, DocumentErrorStatSerializer
 
 from rest_framework import permissions
 from rest_framework.generics import CreateAPIView
@@ -45,14 +45,17 @@ def getRoutes(request):
         "/api/documents/",
         "/api/upload/",
         "/api/register/",
+
+        "/api/submit/",
     ]
 
     return Response(routes)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def getDocuments(request):
-    user = request.user
+    # user = request.user
+    user = User.objects.get(id=1) # for debug purposes
     documents = user.document_set.all()
     serializer = DocumentSerializer(documents, many=True)
     return Response(serializer.data)
@@ -61,11 +64,11 @@ def getDocuments(request):
 class UploadViewSet(ViewSet): 
     # View for uploading documents, only authenticated users can upload documents
     # TODO: The authentication is not implemented for debug purposes, you can uncomment the permission_classes line to enable authentication
-    serializer_class = DocumentSerializer 
+    serializer_class = DocumentUploadSerializer 
     # permission_classes = [IsAuthenticated] # Only authenticated users can upload documents
 
     def create(self, request):
-        serializer = DocumentSerializer(data=request.data)
+        serializer = DocumentUploadSerializer(data=request.data)
         if serializer.is_valid():
             print("Serializer is valid")
             serializer.preprocess(serializer.validated_data)
@@ -83,3 +86,11 @@ class UserRegistrationView(CreateAPIView):
         permissions.AllowAny
     ]
     serializer_class = RegisterSerializer 
+
+
+@api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+def submitDocument(request):
+    # when user hit submit button in HomePgae maybe
+    # This will handle the document analysis 
+    pass
