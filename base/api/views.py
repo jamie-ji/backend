@@ -45,6 +45,8 @@ def getRoutes(request):
         "/api/documents/",
         "/api/upload/",
         "/api/register/",
+
+        "/api/submit/",
     ]
 
     return Response(routes)
@@ -84,3 +86,11 @@ class UserRegistrationView(CreateAPIView):
         permissions.AllowAny
     ]
     serializer_class = RegisterSerializer 
+
+
+@api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+def submitDocument(request):
+    # when user hit submit button in HomePgae maybe
+    # This will handle the document analysis 
+    pass

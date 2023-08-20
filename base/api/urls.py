@@ -14,5 +14,6 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path("documents/", views.getDocuments, name="documents"),
     path("upload/", views.UploadViewSet.as_view({'post': 'create'}), name="upload"),
-    path("registration/",views.UserRegistrationView.as_view(),name='registration')
+    path("registration/",views.UserRegistrationView.as_view(),name='registration'), 
+    path("submit/", views.submitDocument, name="submit"),
 ]

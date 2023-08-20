@@ -33,21 +33,6 @@ class Document(models.Model):
     def __str__(self):
         return "{}".format(self.filename)
     
-    def save(self, *args, **kwargs):
-        # Override save method to update document body from file
-        # Note: this is only called when the document is created, not when it is updated
-        #       so the user must delete the document and reupload it to update the body
-        #       this is because the body is only used for analysis, and we don't want to
-        #       parse the document every time it is updated
-        
-        # return normally
-        super().save(*args, **kwargs)
-
-        # Create empty DocumentErrorDetail and DocumentErrorStat objects
-        doc_error_detail = DocumentErrorDetail.objects.create(document=self)
-        doc_error_detail.save()
-        doc_error_stat = DocumentErrorStat.objects.create(document=self)
-        doc_error_stat.save()
 
 class DocumentErrorDetail(models.Model):
     # Many to one relationship with Document
