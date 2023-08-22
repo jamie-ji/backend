@@ -38,17 +38,20 @@ class DocumentErrorDetail(models.Model):
     # Many to one relationship with Document
     id = models.AutoField(primary_key=True)
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
-    sentence = models.CharField(max_length=1000, default="")
-    mistake_text = models.CharField(max_length=1000, default="")
-    error_message = models.CharField(max_length=1000, default="")
-    replacement = models.CharField(max_length=1000, default="")
-    start_index = models.IntegerField(default=0)
-    end_index = models.IntegerField(default=0)
-    error_type = models.CharField(max_length=100, default="")
-    error_category = models.CharField(max_length=100, default="")
 
+    check_time = models.DateTimeField(auto_now_add=True)
+    error_type = models.CharField(max_length=100, blank=True, null=True)
+    error_sub_type = models.CharField(max_length=100, blank=True, null=True)
+    error_msg =  models.CharField(max_length=100, blank=True, null=True)
+    sentence = models.TextField(max_length=500000, blank=True, null=True)
+    char_position_in_text_from = models.IntegerField(blank=True,null=True)
+    char_position_in_text_to = models.IntegerField(blank=True,null=True)
+    replacements = models.CharField(max_length=100, blank=True, null=True)
     def __str__(self):
-        return "{}".format(self.document.filename)
+        # return f"Document Error : Type({self.error_type}), Sub-Type({self.error_sub_type}), " \
+        #        f"Message({self.error_msg}), Sentence({self.sentence}), From({self.char_position_in_text_from}), To({self.char_position_in_text_to}), " \
+        #        f"Replacements({self.replacements})"
+        return f"Replacements({self.replacements})"
     
 
 class DocumentErrorStat(models.Model):
