@@ -97,15 +97,19 @@ def submitDocument(request):
     # when user hit submit button in HomePgae maybe
     # This will handle the document analysis 
     # user = request.user
-    user = User.objects.get(id=1) # for debug purposes
-    documents = user.document_set.all()
-    for document in documents:
-        if document.analysis_complete == False:
-            getDocumentErrorDetail(document)
-            document.analysis_complete = True
-            document.save()
+    try:
+        user = User.objects.get(id=1) # for debug purposes
+        documents = user.document_set.all()
+        for document in documents:
+            if document.analysis_complete == False:
+                getDocumentErrorDetail(document)
+                document.analysis_complete = True
+                document.save()
 
-    return Response("Document analysis complete")
+        return Response("Document analysis complete")
+    except Exception as e:
+        print(e)
+        return Response("Error occured while analyzing document: " + str(e))
 
 
 def getDocumentErrorDetail(document):
