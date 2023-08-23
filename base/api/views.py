@@ -16,6 +16,9 @@ from rest_framework import permissions
 from rest_framework.generics import CreateAPIView
 from django.contrib.auth import get_user_model
 
+from document_analysis.error_checking import ErrorCheck
+from django.db import models
+
 import json
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -88,9 +91,48 @@ class UserRegistrationView(CreateAPIView):
     serializer_class = RegisterSerializer 
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 # @permission_classes([IsAuthenticated])
 def submitDocument(request):
     # when user hit submit button in HomePgae maybe
     # This will handle the document analysis 
-    pass
+    # user = request.user
+    user = User.objects.get(id=1) # for debug purposes
+    documents = user.document_set.all()
+    for document in documents:
+        if document.analysis_complete == False:
+            getDocumentErrorDetail(document)
+            document.analysis_complete = True
+            document.save()
+
+    return Response("Document analysis complete")
+
+
+def getDocumentErrorDetail(document):
+    # get all the error details of a document
+    # create a DocumentErrorDetail object for each error
+    language_tool = ErrorCheck(api_type='language_tool', language_longcode='en-AU')
+    results = language_tool.check(document.body)
+    for result in results:
+        result.document = document
+        result.save()
+    generateDocumentErrorStat(results, document)
+
+
+
+def generateDocumentErrorStat(results, document): 
+    # generate the error statistics of a document
+    # results is a list of DocumentErrorDetail objects
+    # create a DocumentErrorStat object
+    total_errors = len(results)
+    stats = DocumentErrorStat(total_errors=total_errors, document=document)
+    for result in results:
+        error_type = result.error_type
+        print('error_type', error_type)
+        all_errors = stats.all_errors
+        if error_type in all_errors:
+            all_errors[error_type] += 1
+        else:
+            all_errors[error_type] = 1
+    stats.all_errors = all_errors
+    stats.save()
