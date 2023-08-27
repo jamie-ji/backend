@@ -47,7 +47,7 @@ def getRoutes(request):
         "/api/token/refresh/",
         "/api/documents/",
         "/api/upload/",
-        "/api/register/",
+        "/api/registration/",
 
         "/api/submit/",
     ]
@@ -55,10 +55,10 @@ def getRoutes(request):
     return Response(routes)
 
 @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def getDocuments(request):
-    # user = request.user
-    user = User.objects.get(id=1) # for debug purposes
+    user = request.user
+    # user = User.objects.get(id=1) # for debug purposes
     documents = user.document_set.all()
     serializer = DocumentSerializer(documents, many=True)
     return Response(serializer.data)
