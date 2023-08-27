@@ -45,7 +45,7 @@ def getRoutes(request):
         "/api/documents/",
         "/api/upload/",
         "/api/register/",
-
+        "/api/user/",
         "/api/submit/",
     ]
 
@@ -60,6 +60,15 @@ def getDocuments(request):
     serializer = DocumentSerializer(documents, many=True)
     return Response(serializer.data)
 
+@api_view(['GET'])
+def current_user(request):
+    user = User.objects.get(id=1) # for debug purposes
+    return Response({
+        'username': user.username,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name
+    })
 
 class UploadViewSet(ViewSet): 
     # View for uploading documents, only authenticated users can upload documents
