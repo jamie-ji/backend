@@ -1,4 +1,5 @@
 from django.db import models
+from jsonfield import JSONField
 
 from django.contrib.auth.models import User
 
@@ -59,12 +60,7 @@ class DocumentErrorStat(models.Model):
     id = models.AutoField(primary_key=True)
     document = models.OneToOneField(Document, on_delete=models.CASCADE)
     total_errors = models.IntegerField(default=0)
-    spelling_errors = models.IntegerField(default=0)
-    grammar_errors = models.IntegerField(default=0)
-    punctuation_errors = models.IntegerField(default=0)
-    syntax_errors = models.IntegerField(default=0)
-    style_errors = models.IntegerField(default=0)
-    other_errors = models.IntegerField(default=0)
+    all_errors = models.JSONField(default=dict)
 
     def __str__(self):
         return "{}".format(self.document.filename)
