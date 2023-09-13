@@ -10,7 +10,8 @@ class ErrorCheck:
     It invokes either Ginger or language_tool.
 
     Attributes:
-        api_type (str): The type of API to use for error checking (language_tool or ginger).
+        api_type (str): The type of API to use for error checking (language_tool, language_tool_local or ginger).
+                        language_tool is the premium version, language_tool_local is the local version
         language_longcode (str): The language code in long format ('en-AU',... for language_tool;'US'/'UK' for ginger).
 
     Methods:
@@ -22,7 +23,7 @@ class ErrorCheck:
     def __init__(self,api_type='language_tool',language_longcode='en-AU'):
         self.language_longcode = language_longcode
         self.api_type = api_type
-        if api_type == 'language_tool':
+        if api_type == 'language_tool_local':
             self.tool = language_tool_python.LanguageTool(self.language_longcode)
         elif api_type == 'ginger':
             # ginger's classification of the correction into one of the following main categories
@@ -56,10 +57,59 @@ class ErrorCheck:
             list: A list of error details in the form of DocumentErrorDetail objects.
             or response text if there's exception from APIs.
         """
-        if self.api_type == 'language_tool':
+        if self.api_type == 'language_tool': # default
+            return self.language_tool_premium_check(text,self.language_longcode)
+        elif self.api_type == 'language_tool_local':
             return self.language_tool_check(text)
         elif self.api_type == 'ginger':
             return self.ginger_check(text)
+    def language_tool_premium_check(self,text,language="en-AU",level="default"):
+        """
+        Using the premium version of language_tool
+        Args:
+            text (str): The text to be checked for errors.
+            language: A language code like en-US, de-DE, fr, or auto to guess the language automatically
+            level: If set to picky, additional rules will be activated.
+        Returns:
+            list: A list of error details in the form of DocumentErrorDetail objects.
+            or response text if there's exception from APIs.
+        """
+
+        # API key from language_tool
+        API_KEY = "bf2d852d9febce4b"
+        USERNAME = "admin@penwell.com.au"
+        # Construct the request URL and headers
+        ENDPOINT_URL = "https://api.languagetoolplus.com/v2/check"
+        headers = {
+            "Content-Type": "text/plain",
+        }
+        # Define the URL parameters
+        params = {
+            "apiKey": API_KEY,
+            "language": language,
+            "username": USERNAME,
+            "level": level,
+            "text": text
+        }
+        # Make the POST request
+        response = requests.post(ENDPOINT_URL, headers=headers, params=params)
+        if response.status_code == 200:
+            matches  = response.json()["matches"]
+            result = []
+            for match in matches:
+                # just choose the first replacement right now
+                replacement = match["replacements"][0]["value"] if len(match["replacements"]) > 0 else ""
+                document_error = DocumentErrorDetail(check_time=dt.now(), error_type=match["rule"]["category"]["name"]
+                                                     ,error_sub_type=match["rule"]["id"]
+                                                     ,error_msg=match["message"], sentence=match["sentence"]
+                                                     ,char_position_in_text_from=match["offset"]
+                                                     ,char_position_in_text_to=match["offset"] + match["length"]
+                                                     ,replacements=[text[match["offset"]:match["offset"] + match["length"]],
+                                                                   replacement])
+                result.append(document_error)
+            return result
+        else:
+            return response.text
     def language_tool_check(self,text):
         # document = Document.objects.get(pk = document_id)
         matches = self.tool.check(text)
