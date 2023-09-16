@@ -86,3 +86,17 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 # Connect the create_user_profile function to the post_save signal
 models.signals.post_save.connect(create_user_profile, sender=User)
+
+class ConfirmString(models.Model):
+    code = models.CharField(max_length=256)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    c_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.user.name + ":   " + self.code
+
+    class Meta:
+
+        ordering = ["-c_time"]
+        verbose_name = "confirm_code"
+        verbose_name_plural = "confirm_code"

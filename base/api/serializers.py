@@ -1,14 +1,45 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers, status
 from base.models import Document, DocumentErrorDetail, DocumentErrorStat
-
+from base import models
 from docx import Document as DocxDocument
 from django.utils.timezone import make_aware
 from django.contrib.auth import get_user_model
-
+import datetime
+import hashlib
 import re
+from django.conf import settings
 
 UserModel = get_user_model()
+
+def hash_code(s, salt='penwell'):
+    h = hashlib.sha256()
+    s += salt
+    h.update(s.encode())
+    return h.hexdigest()
+def make_confirm_string(user):
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    code = hash_code(user.username, now)
+    models.ConfirmString.objects.create(code=code, user=user)
+    return code
+def send_email(email, code):
+
+    from django.core.mail import EmailMultiAlternatives
+
+    subject = 'Confirm from penwell'
+
+    text_content = '''test without html link'''
+
+    html_content = '''
+                    <p>Thanks for registering. <a href="http://{}/confirm/?code={}" target=blank>www.penwell.com</a>,\
+                    Link to Penwell</p>
+                    <p>Please click link to finish registeration</p>
+                    <p>Last for {} days</p>
+                    '''.format('127.0.0.1:8000', code, settings.CONFIRM_DAYS)
+
+    msg = EmailMultiAlternatives(subject, text_content, settings.EMAIL_HOST_USER, [email])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
 
 class DocumentUploadSerializer(ModelSerializer):
     # model for uploading a document, only one file field
@@ -69,8 +100,12 @@ class RegisterSerializer(serializers.ModelSerializer):
             email=data['email'],
             first_name=data['first_name'],
             last_name=data['last_name'],
-            password=data['password']
+            password=data['password'],
         )
+        # send email to user
+        code = make_confirm_string(user)
+        send_email(data['email'], code)
+        
         return user
     
 class DocumentErrorDetailSerializer(ModelSerializer):
