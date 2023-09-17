@@ -118,6 +118,34 @@ def getRoutes(request):
                 "response": "Document analysis complete"}
     routes.append(api)
     
+    # Read sample response from json file
+    sample_response_file = open("base\\api\\.asset\\errors.json", "r")
+    sample_response = sample_response_file.read()
+    sample_response_file.close()
+    sample_response = json.loads(sample_response)
+    api = {"route" : "/api/errors/",
+                "method" : "GET",
+                "permission_classes": "IsAuthenticated",
+                "description": "Get all the error stat of the current user",
+                "header": {"Content-Type": "application/json", "Authorization": "Bearer <token.access>"}, 
+                "response": "[{id, total_errors, all_errors, document}]", 
+                "sample_response": sample_response}
+    routes.append(api)
+
+    # Read sample response from json file
+    sample_response_file = open("base\\api\\.asset\\error_details.json", "r")
+    sample_response = sample_response_file.read()
+    sample_response_file.close()
+    sample_response = json.loads(sample_response)
+    api = {"route" : "/api/errors/details",
+                "method" : "GET",
+                "permission_classes": "IsAuthenticated",
+                "description": "Get all the error details of the current user",
+                "header": {"Content-Type": "application/json", "Authorization": "Bearer <token.access>"}, 
+                "response": "[{id, check_time, error_type, error_sub_type, error_msg, sentence, char_position_in_text_from, char_position_in_text_to, replacements, document}]",
+                "sample_response": sample_response}
+
+
     # routes = [
     #     "/api/", 
     #     "/api/token/",
@@ -248,3 +276,53 @@ def generateDocumentErrorStat(results, document):
             all_errors[error_type] = 1
     stats.all_errors = all_errors
     stats.save()
+
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+def getErrors(request):
+    # get all the errors of the current user
+    # TODO: The authentication is not implemented for debug purposes, you can uncomment the permission_classes line to enable authentication
+    # user = request.user
+    user = User.objects.get(id=1) # for debug purposes
+    documents = user.document_set.all()
+    errors = []
+    for doc in documents:
+        if doc.analysis_complete == True:
+            error_stat = DocumentErrorStat.objects.get(document=doc)
+            errors.append(error_stat)
+    serializer = DocumentErrorStatSerializer(errors, many=True)
+
+    # # Get sample response
+    # serializer_data = serializer.data
+    # # save to json file
+    # path_file = "base\\api\\.asset\\errors.json"
+    # with open(path_file, 'w') as outfile:
+    #     json.dump(serializer_data, outfile)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+def getErrorDetails(request):
+    # get all error details of the current user
+    # TODO: The authentication is not implemented for debug purposes, you can uncomment the permission_classes line to enable authentication
+    # user = request.user
+    user = User.objects.get(id=1) # for debug purposes
+    documents = user.document_set.all()
+    errors = []
+    for doc in documents:
+        if doc.analysis_complete == True:
+            error_details = DocumentErrorDetail.objects.filter(document=doc)
+            # loop through all the error details of a document
+            for error_detail in error_details:
+                errors.append(error_detail)
+    serializer = DocumentErrorDetailSerializer(errors, many=True)
+    serializer_data = serializer.data
+
+    # # Get sample response
+    # serializer_data = serializer.data
+    # # save to json file
+    # path_file = "base\\api\\.asset\\error_details.json"
+    # with open(path_file, 'w') as outfile:
+    #     json.dump(serializer_data, outfile)
+    return Response(serializer.data)

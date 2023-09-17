@@ -14,5 +14,7 @@ urlpatterns = [
     path("upload/", views.UploadViewSet.as_view({'post': 'create'}), name="upload"),
     path("registration/",views.UserRegistrationView.as_view(),name='registration'), 
     path("submit/", views.submitDocument, name="submit"),
-    path("user/",views.current_user,name="user")
+    path("user/",views.current_user,name="user"), 
+    path("errors/", views.getErrors, name="errors"),
+    path("errors/details", views.getErrorDetails, name="error_details"),
 ]
