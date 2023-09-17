@@ -144,6 +144,7 @@ def getRoutes(request):
                 "header": {"Content-Type": "application/json", "Authorization": "Bearer <token.access>"}, 
                 "response": "[{id, check_time, error_type, error_sub_type, error_msg, sentence, char_position_in_text_from, char_position_in_text_to, replacements, document}]",
                 "sample_response": sample_response}
+    routes.append(api)
 
 
     # routes = [
