@@ -9,7 +9,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from base.models import Document, DocumentErrorDetail, DocumentErrorStat
-from .serializers import DocumentSerializer, DocumentUploadSerializer, RegisterSerializer
+from .serializers import DocumentSerializer, DocumentUploadSerializer, RegisterSerializer, UserSerializer, UserProfilesSerializer
 from .serializers import DocumentErrorDetailSerializer, DocumentErrorStatSerializer
 
 from rest_framework import permissions
@@ -96,12 +96,18 @@ def getRoutes(request):
                 "response": "{username, email, first_name, last_name}"}
     routes.append(api)
 
+    # Read sample response from json file
+    sample_response_file = open("base\\api\\.asset\\user.json", "r")
+    sample_response = sample_response_file.read()
+    sample_response_file.close()
+    sample_response = json.loads(sample_response)
     api = {"route" : "/api/user/",
                 "method" : "GET",
                 "permission_classes": "IsAuthenticated",
                 "description": "Get the current user's information",
                 "header": {"Content-Type": "application/json", "Authorization": "Bearer <token.access>"}, 
-                "response": "{username, email, first_name, last_name}"}
+                "response": "{id, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined, groups, user_permissions, updating}", 
+                "sample_response": sample_response}
     routes.append(api)
 
     api = {"route" : "/api/submit/",
@@ -142,14 +148,28 @@ def getDocuments(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
 def current_user(request):
-    user = User.objects.get(id=1) # for debug purposes
-    return Response({
-        'username': user.username,
-        'email': user.email,
-        'first_name': user.first_name,
-        'last_name': user.last_name
-    })
+    # TODO: The authentication is not implemented for debug purposes, you can uncomment the permission_classes line to enable authentication
+    # user = request.user
+    user = User.objects.get(id=2) # for debug purposes
+    serializer1 = UserSerializer(user)
+    dict1 = serializer1.data
+    try: 
+        user_profile = user.userprofile
+        serializer2 = UserProfilesSerializer(user_profile)
+        dict2 = serializer2.data
+        dict1.update(dict2)
+    except Exception as e:
+        print(e)
+    
+    # # Get sample response
+    # serializer_data = dict1
+    # # save to json file
+    # path_file = "base\\api\\.asset\\user.json"
+    # with open(path_file, 'w') as outfile:
+    #     json.dump(serializer_data, outfile)
+    return Response(dict1)
 
 class UploadViewSet(ViewSet): 
     # View for uploading documents, only authenticated users can upload documents
@@ -181,11 +201,12 @@ class UserRegistrationView(CreateAPIView):
 @api_view(['GET'])
 # @permission_classes([IsAuthenticated])
 def submitDocument(request):
-    # when user hit submit button in HomePgae maybe
+    # when user hit submit button in HomePgae maybe updating
     # This will handle the document analysis 
+    # TODO: The authentication is not implemented for debug purposes, you can uncomment the permission_classes line to enable authentication
     # user = request.user
+    user = User.objects.get(id=1) # for debug purposes
     try:
-        user = User.objects.get(id=1) # for debug purposes
         documents = user.document_set.all()
         for document in documents:
             if document.analysis_complete == False:
