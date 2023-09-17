@@ -41,17 +41,87 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 @api_view(['GET'])
 def getRoutes(request): 
-    routes = [
-        "/api/", 
-        "/api/token/",
-        "/api/token/refresh/",
-        "/api/documents/",
-        "/api/upload/",
-        "/api/registration/",
-        "/api/register/",
-        "/api/user/",
-        "/api/submit/",
-    ]
+    routes = []
+    api = {"route" : "/api/", 
+              "method" : "GET", 
+              "permission_classes": "AllowAny", 
+              "description": "List all the routes of the backend API"}
+    routes.append(api)
+
+    api = {"route" : "/api/token/",
+              "method" : "POST", 
+              "permission_classes": "AllowAny", 
+              "description": "Get the token for authentication using username and password", 
+              "body": "{username, password}", 
+              "response": "{access, refresh}"}
+    routes.append(api)
+
+    api = {"route" : "/api/token/refresh/",
+                "method" : "POST", 
+                "permission_classes": "AllowAny", 
+                "description": "Get the new access/refresh token pair using a valid refresh token", 
+                "body": "{refresh}", 
+                "response": "{access, refresh}"}
+    routes.append(api)
+
+    # Read sample response from json file
+    sample_response_file = open("base\\api\\.asset\\documents.json", "r")
+    sample_response = sample_response_file.read()
+    sample_response_file.close()
+    sample_response = json.loads(sample_response)
+
+    api = {"route" : "/api/documents/",
+                "method" : "GET", 
+                "permission_classes": "IsAuthenticated", 
+                "description": "Get all the documents of the current user", 
+                "header": {"Content-Type": "application/json", "Authorization": "Bearer <token.access>"},
+                "response": "[{id, file, uploaded_at, body, filename, author, created_at, last_modified, word_count, category, analysis_complete, user}]", 
+                "sample_response": sample_response}
+    routes.append(api)
+
+    api = {"route" : "/api/upload/", 
+                "method" : "POST", 
+                "permission_classes": "IsAuthenticated", 
+                "description": "Upload a document to the database as the current user",
+                "header": {"Content-Type": "application/json", "Authorization": "Bearer <token.access>"}, 
+                "body": "{file}",
+                "response": {"file": "DIR_TO_FILE"}}
+    routes.append(api)
+
+    api = {"route" : "/api/registration/",
+                "method" : "POST", 
+                "permission_classes": "AllowAny", 
+                "description": "Register a new user", 
+                "body": "{username, email, first_name, last_name, password}}", 
+                "response": "{username, email, first_name, last_name}"}
+    routes.append(api)
+
+    api = {"route" : "/api/user/",
+                "method" : "GET",
+                "permission_classes": "IsAuthenticated",
+                "description": "Get the current user's information",
+                "header": {"Content-Type": "application/json", "Authorization": "Bearer <token.access>"}, 
+                "response": "{username, email, first_name, last_name}"}
+    routes.append(api)
+
+    api = {"route" : "/api/submit/",
+                "method" : "GET",
+                "permission_classes": "IsAuthenticated",
+                "description": "Start the document analysis process for the current user",
+                "header": {"Content-Type": "application/json", "Authorization": "Bearer <token.access>"}, 
+                "response": "Document analysis complete"}
+    routes.append(api)
+    
+    # routes = [
+    #     "/api/", 
+    #     "/api/token/",
+    #     "/api/token/refresh/",
+    #     "/api/documents/",
+    #     "/api/upload/",
+    #     "/api/registration/",
+    #     "/api/user/",
+    #     "/api/submit/",
+    # ]
 
     return Response(routes)
 
@@ -62,6 +132,13 @@ def getDocuments(request):
     # user = User.objects.get(id=1) # for debug purposes
     documents = user.document_set.all()
     serializer = DocumentSerializer(documents, many=True)
+
+    # # Get sample response
+    # serializer_data = serializer.data
+    # # save to json file
+    # path_file = "base\\api\\.asset\\documents.json"
+    # with open(path_file, 'w') as outfile:
+    #     json.dump(serializer_data, outfile)
     return Response(serializer.data)
 
 @api_view(['GET'])
