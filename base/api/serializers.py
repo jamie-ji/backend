@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers, status
-from base.models import Document, DocumentErrorDetail, DocumentErrorStat
+from base.models import Document, DocumentErrorDetail, DocumentErrorStat, UserProfile
 
 from docx import Document as DocxDocument
 from django.utils.timezone import make_aware
@@ -73,6 +73,18 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         return user
     
+class UserSerializer(serializers.ModelSerializer):
+    # model for viewing a user, all fields included
+    class Meta:
+        model = UserModel
+        exclude = ('password',)
+    
+class UserProfilesSerializer(serializers.ModelSerializer):
+    # model for viewing a user profile, all fields included
+    class Meta:
+        model = UserProfile
+        exclude = ('id', 'user',)
+
 class DocumentErrorDetailSerializer(ModelSerializer):
     # model for viewing/updating a document error detail, all fields included
     class Meta:

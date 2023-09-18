@@ -63,7 +63,7 @@ class DocumentErrorStat(models.Model):
     all_errors = models.JSONField(default=dict)
 
     def __str__(self):
-        return "{}".format(self.document.filename)
+        return "{},{}".format(self.document.filename, self.total_errors)
     
 
 class UserProfile(models.Model):
