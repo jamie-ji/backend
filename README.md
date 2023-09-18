@@ -8,7 +8,7 @@ You can choose to run this in a virtual environment or not. If you do, you can c
 ```
 python -m pip install virtualenv
 
-verntualenv .venv
+virtualenv .venv
 ```
 
 Then activate the virtual environment:
