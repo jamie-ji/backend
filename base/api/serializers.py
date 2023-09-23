@@ -2,6 +2,7 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers, status
 
 from base.models import Document, DocumentErrorDetail, DocumentErrorStat, UserProfile
+from base import models
 
 from docx import Document as DocxDocument
 from django.utils.timezone import make_aware
