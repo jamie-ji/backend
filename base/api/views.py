@@ -177,11 +177,10 @@ def getDocuments(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def current_user(request):
-    # TODO: The authentication is not implemented for debug purposes, you can uncomment the permission_classes line to enable authentication
-    # user = request.user
-    user = User.objects.get(id=2) # for debug purposes
+    user = request.user
+    # user = User.objects.get(id=2) # for debug purposes
     serializer1 = UserSerializer(user)
     dict1 = serializer1.data
     try: 
@@ -202,9 +201,8 @@ def current_user(request):
 
 class UploadViewSet(ViewSet): 
     # View for uploading documents, only authenticated users can upload documents
-    # TODO: The authentication is not implemented for debug purposes, you can uncomment the permission_classes line to enable authentication
     serializer_class = DocumentUploadSerializer 
-    # permission_classes = [IsAuthenticated] # Only authenticated users can upload documents
+    permission_classes = [IsAuthenticated] # Only authenticated users can upload documents
 
     def create(self, request):
         serializer = DocumentUploadSerializer(data=request.data)
@@ -212,8 +210,9 @@ class UploadViewSet(ViewSet):
             print("Serializer is valid")
             serializer.preprocess(serializer.validated_data)
 
-            # serializer.save(user=request.user)
-            serializer.save(user=User.objects.get(id=1)) # for debug purposes
+            user = request.user
+            serializer.save(user=user)
+            # serializer.save(user=User.objects.get(id=1)) # for debug purposes
 
             return Response(serializer.data)
         else: 
@@ -228,13 +227,12 @@ class UserRegistrationView(CreateAPIView):
 
 
 @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def submitDocument(request):
     # when user hit submit button in HomePgae maybe updating
     # This will handle the document analysis 
-    # TODO: The authentication is not implemented for debug purposes, you can uncomment the permission_classes line to enable authentication
-    # user = request.user
-    user = User.objects.get(id=1) # for debug purposes
+    user = request.user
+    # user = User.objects.get(id=1) # for debug purposes
     try:
         documents = user.document_set.all()
         for document in documents:
@@ -279,12 +277,11 @@ def generateDocumentErrorStat(results, document):
     stats.save()
 
 @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def getErrors(request):
     # get all the errors of the current user
-    # TODO: The authentication is not implemented for debug purposes, you can uncomment the permission_classes line to enable authentication
-    # user = request.user
-    user = User.objects.get(id=1) # for debug purposes
+    user = request.user
+    # user = User.objects.get(id=1) # for debug purposes
     documents = user.document_set.all()
     errors = []
     for doc in documents:
@@ -303,12 +300,11 @@ def getErrors(request):
 
 
 @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def getErrorDetails(request):
     # get all error details of the current user
-    # TODO: The authentication is not implemented for debug purposes, you can uncomment the permission_classes line to enable authentication
-    # user = request.user
-    user = User.objects.get(id=1) # for debug purposes
+    user = request.user
+    # user = User.objects.get(id=1) # for debug purposes
     documents = user.document_set.all()
     errors = []
     for doc in documents:
