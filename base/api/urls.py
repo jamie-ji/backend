@@ -17,4 +17,5 @@ urlpatterns = [
     path("user/",views.current_user,name="user"), 
     path("errors/", views.getErrors, name="errors"),
     path("errors/details", views.getErrorDetails, name="error_details"),
+    path("errors/chart", views.getChartInfo, name="error_chart"),
 ]

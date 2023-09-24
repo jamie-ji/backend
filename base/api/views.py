@@ -267,7 +267,7 @@ def generateDocumentErrorStat(results, document):
     stats = DocumentErrorStat(total_errors=total_errors, document=document)
     for result in results:
         error_type = result.error_type
-        print('error_type', error_type)
+        # print('error_type', error_type)
         all_errors = stats.all_errors
         if error_type in all_errors:
             all_errors[error_type] += 1
@@ -323,3 +323,42 @@ def getErrorDetails(request):
     # with open(path_file, 'w') as outfile:
     #     json.dump(serializer_data, outfile)
     return Response(serializer.data)
+
+
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+def getChartInfo(request): 
+    # get the chart info of the current user
+    # user = request.user
+    user = User.objects.get(id=1) # for debug purposes
+    documents = user.document_set.all()
+    errors = []
+    timestamps = []
+    chart_info = []
+    for doc in documents:
+        if doc.analysis_complete == True:
+            error_stat = DocumentErrorStat.objects.get(document=doc)
+            timestamp = error_stat.document.last_modified
+            timestamp = timestamp.strftime("%Y-%m")
+            error_stat.timestamp = timestamp
+            if timestamp not in timestamps:
+                timestamps.append(timestamp)
+            # print(error_stat.timestamp)
+            errors.append(error_stat)
+
+    print(timestamps)
+    for timestamp in timestamps:
+        total_errors = 0
+        all_errors = {}
+        for error in errors:
+            if error.timestamp == timestamp:
+                total_errors += error.total_errors
+                for key in error.all_errors:
+                    if key in all_errors:
+                        all_errors[key] += error.all_errors[key]
+                    else:
+                        all_errors[key] = error.all_errors[key]
+        chart_info.append({"timestamp": timestamp, "total_errors": total_errors, "all_errors": all_errors})
+
+    return Response(chart_info)
+
