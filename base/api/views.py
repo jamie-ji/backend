@@ -326,11 +326,11 @@ def getErrorDetails(request):
 
 
 @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def getChartInfo(request): 
     # get the chart info of the current user
-    # user = request.user
-    user = User.objects.get(id=1) # for debug purposes
+    user = request.user
+    # user = User.objects.get(id=1) # for debug purposes
     documents = user.document_set.all()
     errors = []
     timestamps = []
