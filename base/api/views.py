@@ -65,7 +65,7 @@ def getRoutes(request):
     routes.append(api)
 
     # Read sample response from json file
-    sample_response_file = open("base\\api\\.asset\\documents.json", "r")
+    sample_response_file = open("base/api/.asset/documents.json", "r")
     sample_response = sample_response_file.read()
     sample_response_file.close()
     sample_response = json.loads(sample_response)
@@ -97,7 +97,7 @@ def getRoutes(request):
     routes.append(api)
 
     # Read sample response from json file
-    sample_response_file = open("base\\api\\.asset\\user.json", "r")
+    sample_response_file = open("base/api/.asset/user.json", "r")
     sample_response = sample_response_file.read()
     sample_response_file.close()
     sample_response = json.loads(sample_response)
@@ -119,7 +119,7 @@ def getRoutes(request):
     routes.append(api)
     
     # Read sample response from json file
-    sample_response_file = open("base\\api\\.asset\\errors.json", "r")
+    sample_response_file = open("base/api/.asset/errors.json", "r")
     sample_response = sample_response_file.read()
     sample_response_file.close()
     sample_response = json.loads(sample_response)
@@ -133,7 +133,7 @@ def getRoutes(request):
     routes.append(api)
 
     # Read sample response from json file
-    sample_response_file = open("base\\api\\.asset\\error_details.json", "r")
+    sample_response_file = open("base/api/.asset/error_details.json", "r")
     sample_response = sample_response_file.read()
     sample_response_file.close()
     sample_response = json.loads(sample_response)
