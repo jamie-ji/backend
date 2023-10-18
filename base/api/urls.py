@@ -13,6 +13,7 @@ urlpatterns = [
     path("documents/", views.getDocuments, name="documents"),
     path("upload/", views.UploadViewSet.as_view({'post': 'create'}), name="upload"),
     path("registration/",views.UserRegistrationView.as_view(),name='registration'), 
+    path('validate/', views.validate_code, name='validate_code'),
     path("submit/", views.submitDocument, name="submit"),
     path("user/",views.current_user,name="user"), 
     path("errors/", views.getErrors, name="errors"),

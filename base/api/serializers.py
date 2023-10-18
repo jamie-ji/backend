@@ -1,43 +1,37 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers, status
-
+from rest_framework.validators import UniqueValidator
 from base.models import Document, DocumentErrorDetail, DocumentErrorStat, UserProfile
 from base import models
-
+import random
 from docx import Document as DocxDocument
 from django.utils.timezone import make_aware
 from django.contrib.auth import get_user_model
-import datetime
-import hashlib
+from datetime import datetime, timedelta
 import re
 from django.conf import settings
-
+from base.models import VerificationCode
 UserModel = get_user_model()
 
-def hash_code(s, salt='penwell'):
-    h = hashlib.sha256()
-    s += salt
-    h.update(s.encode())
-    return h.hexdigest()
-def make_confirm_string(user):
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    code = hash_code(user.username, now)
-    models.ConfirmString.objects.create(code=code, user=user)
-    return code
-def send_email(email, code):
+user_t=None
+
+def send_email(email,code):
 
     from django.core.mail import EmailMultiAlternatives
-
+    
+    now = datetime.now()
+    expiration_time = now + timedelta(minutes=10)
+    
     subject = 'Confirm from penwell'
 
     text_content = '''test without html link'''
 
     html_content = '''
-                    <p>Thanks for registering. <a href="http://{}/confirm/?code={}" target=blank>www.penwell.com</a>,\
-                    Link to Penwell</p>
-                    <p>Please click link to finish registeration</p>
-                    <p>Last for {} days</p>
-                    '''.format('127.0.0.1:8000', code, settings.CONFIRM_DAYS)
+                    <p>Thanks for registering. Here is your validation code:{} ,\
+                    Regards from Penwell</p>
+                    
+                    <p>Last for {} mins</p>
+                    '''.format(code, settings.CONFIRM_MINS)
 
     msg = EmailMultiAlternatives(subject, text_content, settings.EMAIL_HOST_USER, [email])
     msg.attach_alternative(html_content, "text/html")
@@ -86,29 +80,70 @@ class DocumentSerializer(ModelSerializer):
 # Registration functionality using get_user_model.
 class RegisterSerializer(serializers.ModelSerializer): 
     # model for registering a user
+    # class Meta:
+    #     model = UserModel
+    #     fields = ('username','email','first_name','last_name','password')
+    
+    # username = serializers.CharField(max_length=100, min_length=6)
+    # email = serializers.EmailField(max_length=100, min_length=6)
+    username = serializers.CharField(
+        max_length=100, 
+        min_length=6,
+        validators=[
+            UniqueValidator(
+                queryset=UserModel.objects.all(),
+                message="This username is already in use."
+            )
+        ]
+    )
+    
+    email = serializers.EmailField(
+        max_length=100, 
+        min_length=6,
+        validators=[
+            UniqueValidator(
+                queryset=UserModel.objects.all(),
+                message="This email address is already in use."
+            )
+        ]
+    )
     class Meta:
         model = UserModel
-        fields = ('username','email','first_name','last_name','password')
+        fields = ('username', 'email', 'first_name', 'last_name', 'password')
     
-    username = serializers.CharField(max_length=100, min_length=6)
-    email = serializers.EmailField(max_length=100, min_length=6)
     first_name = serializers.CharField(max_length=20, min_length=2)
     last_name = serializers.CharField(max_length=20, min_length=2)
     password = serializers.CharField(write_only=True)
+    
+    #VerificationCode.objects.create(email=email,code=code, expiration_time=expiration_time)
     def create(self,data):
-
-        user = UserModel.objects.create_user(
+        code = ''.join(random.choice('0123456789') for _ in range(6))
+        send_email(data['email'],code)
+        
+        user = VerificationCode.objects.create(
             username=data['username'],
             email=data['email'],
             first_name=data['first_name'],
             last_name=data['last_name'],
             password=data['password'],
+            code=code,
         )
-        # send email to user
-        code = make_confirm_string(user)
-        send_email(data['email'], code)
+               
+        return user 
+
+    # def create(self,data):
+    #     code = ''.join(random.choice('0123456789') for _ in range(6))
+    #     send_email(data['email'],code)
         
-        return user
+    #     user = UserModel.objects.create_user(
+    #         username=data['username'],
+    #         email=data['email'],
+    #         first_name=data['first_name'],
+    #         last_name=data['last_name'],
+    #         password=data['password'],
+    #     )
+               
+    #     return user,code
     
 class UserSerializer(serializers.ModelSerializer):
     # model for viewing a user, all fields included

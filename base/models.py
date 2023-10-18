@@ -1,6 +1,6 @@
 from django.db import models
 from jsonfield import JSONField
-
+from django.utils import timezone
 from django.contrib.auth.models import User
 
 from .validators import validate_file_extension, validate_file_size
@@ -83,16 +83,15 @@ def create_user_profile(sender, instance, created, **kwargs):
 # Connect the create_user_profile function to the post_save signal
 models.signals.post_save.connect(create_user_profile, sender=User)
 
-class ConfirmString(models.Model):
-    code = models.CharField(max_length=256)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    c_time = models.DateTimeField(auto_now_add=True)
-
+class VerificationCode(models.Model):
+    username=models.CharField(max_length=30)  
+    email=models.CharField(max_length=30)  
+    first_name=models.CharField(max_length=30)  
+    last_name=models.CharField(max_length=30)  
+    password=models.CharField(max_length=30)  
+    code = models.CharField(max_length=6)  
+    
     def __str__(self):
-        return self.user.name + ":   " + self.code
-
-    class Meta:
-
-        ordering = ["-c_time"]
-        verbose_name = "confirm_code"
-        verbose_name_plural = "confirm_code"
+        return self.code
+    # def is_valid(self):
+    #     return self.expire_at > timezone.now()

@@ -194,4 +194,4 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'penwellteam@gmail.com'
 EMAIL_HOST_PASSWORD = 'uvuxvqbnralafhfi'
 
-CONFIRM_DAYS = 7
+CONFIRM_MINS = 10

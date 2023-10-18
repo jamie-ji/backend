@@ -18,6 +18,8 @@ from django.contrib.auth import get_user_model
 
 from document_analysis.error_checking import ErrorCheck
 from django.db import models
+from base.models import VerificationCode
+from django.http import JsonResponse
 
 import json
 
@@ -224,6 +226,42 @@ class UserRegistrationView(CreateAPIView):
         permissions.AllowAny
     ]
     serializer_class = RegisterSerializer 
+#@api_view(['POST'])
+# def submitVerificationCode(request):
+#     code=request.code
+#     username=request.username
+#     verificationcodes=VerificationCode.objects.all()
+#     for i in verificationcodes:
+#         if i.code==code and i.username==username:
+#             # pass  create user in User
+@api_view(['POST'])
+def validate_code(request):
+    if request.method == 'POST':
+        code = request.data.get('code')
+        print(code)
+        try:
+            validation = VerificationCode.objects.get(code=code)
+
+            # if not validation.is_valid():
+            #     return JsonResponse({'success': False, 'message': 'Code has expired!'})
+
+            # user = validation.user
+            user = User.objects.create_user(
+                    username=validation.username,
+                    email=validation.email,
+                    first_name=validation.first_name,
+                    last_name=validation.last_name,
+                    password=validation.password,
+                )
+            validation.delete()
+
+
+            return JsonResponse({'success': True})
+
+        except VerificationCode.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Invalid code!'})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method!'})
 
 
 @api_view(['GET'])
